@@ -10,17 +10,36 @@ cookbooks:
 attrs:
   install:
     dir: /srv/hops
+    dev_ssh_keys: true
     enterprise:
       install: true
       download_url: "https://nexus.hops.works/repository"
       username: ""
       password: ""
   hops:
+    num_replicas: 1
+    tls:
+     enabled: true
+     crl_enabled: true
+     crl_fetcher_class: "org.apache.hadoop.security.ssl.DevRemoteCRLFetcher"
+     crl_fetcher_interval: "5m"
     rmappsecurity:
-      actor_class: "org.apache.hadoop.yarn.server.resourcemanager.security.DevHopsworksRMAppSecurityActions"
+     actor_class: "org.apache.hadoop.yarn.server.resourcemanager.security.DevHopsworksRMAppSecurityActions"
+     x509:
+       expiration_safety_period: "30m"
+    encrypt_data_transfer:
+     enabled: true
+    xattrs:
+      max-xattrs-per-inode: 127
+      max-xattr-size: 3442755
     yarn:
+      cgroups_strict_resource_usage: true
+      detect-hardware-capabilities: false
       vcores: 4
-      memory_mbs: 20000
+      memory_mbs: 24000
+    docker:
+      cgroup:
+        enabled: true
   alertmanager:
     email:
       to: sre@logicalclocks.com
@@ -30,10 +49,21 @@ attrs:
     retention_time: "2h"
   hopsworks:
     debug: true
-    featurestore_online: true
     enable_flyingduck: true
-    enable_jupyter_python_kernel_non_kubernetes: true
-    loadbalancer_external_domain: "localhost"
+    enable_read_only_git_repositories: false
+    featurestore_online: true
+    encryption_password: "verysecurepassword"
+    application_certificate_validity_period: "45m"
+    hopsworks_rest_log_level: "DEV"
+    jwt:
+     lifetime_ms: '43200000'
+    hive2:
+      scratch_dir_delay: "30s"
+      scratch_dir_cleaner_interval: "10s"
+    job:
+      executions_cleaner_interval_ms: "5000"
+    docker:
+      cgroup_monitor_interval: "2m"
   elastic:
     opensearch_security:
       jwt:
@@ -45,6 +75,8 @@ attrs:
     LockPagesInMainMemory: 0
     TotalMemoryConfig: 5G
     NumCPUs: 4
+  jupyter:
+    shutdown_timer_interval: "1m"
   flyingduck:
     memory_gbs: 4
     cpus: 2
